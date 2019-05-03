@@ -9,6 +9,7 @@ import (
 
 type Client interface {
 	FindContainer(logger lager.Logger, teamID int, handle string) (Container, bool, error)
+	CreateContainer(logger lager.Logger, spec ContainerSpec, workerSpec WorkerSpec) (Container, error)
 	FindVolume(logger lager.Logger, teamID int, handle string) (Volume, bool, error)
 	CreateVolume(logger lager.Logger, spec VolumeSpec, teamID int, volumeType db.VolumeType) (Volume, error)
 }

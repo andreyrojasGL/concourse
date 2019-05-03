@@ -47,8 +47,7 @@ type PutStep struct {
 	versionInfo VersionInfo
 	succeeded   bool
 
-	strategy        worker.ContainerPlacementStrategy
-	resourceFactory resource.ResourceFactory
+	strategy worker.ContainerPlacementStrategy
 }
 
 func NewPutStep(
@@ -68,7 +67,6 @@ func NewPutStep(
 	stepMetadata StepMetadata,
 	resourceTypes creds.VersionedResourceTypes,
 	strategy worker.ContainerPlacementStrategy,
-	resourceFactory resource.ResourceFactory,
 ) *PutStep {
 	return &PutStep{
 		build: build,
@@ -88,7 +86,6 @@ func NewPutStep(
 		stepMetadata:          stepMetadata,
 		resourceTypes:         resourceTypes,
 		strategy:              strategy,
-		resourceFactory:       resourceFactory,
 	}
 }
 
@@ -166,7 +163,7 @@ func (step *PutStep) Run(ctx context.Context, state RunState) error {
 
 	step.delegate.Starting(logger)
 
-	putResource := step.resourceFactory.NewResourceForContainer(container)
+	putResource := resource.NewResource(container)
 	versionedSource, err := putResource.Put(
 		ctx,
 		resource.IOConfig{

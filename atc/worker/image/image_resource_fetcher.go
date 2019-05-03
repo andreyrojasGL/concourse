@@ -52,20 +52,17 @@ type imageResourceFetcherFactory struct {
 	dbResourceCacheFactory  db.ResourceCacheFactory
 	dbResourceConfigFactory db.ResourceConfigFactory
 	resourceFetcher         resource.Fetcher
-	resourceFactory         resource.ResourceFactory
 }
 
 func NewImageResourceFetcherFactory(
 	dbResourceCacheFactory db.ResourceCacheFactory,
 	dbResourceConfigFactory db.ResourceConfigFactory,
 	resourceFetcher resource.Fetcher,
-	resourceFactory resource.ResourceFactory,
 ) ImageResourceFetcherFactory {
 	return &imageResourceFetcherFactory{
 		dbResourceCacheFactory:  dbResourceCacheFactory,
 		dbResourceConfigFactory: dbResourceConfigFactory,
 		resourceFetcher:         resourceFetcher,
-		resourceFactory:         resourceFactory,
 	}
 }
 
@@ -79,7 +76,6 @@ func (f *imageResourceFetcherFactory) NewImageResourceFetcher(
 ) ImageResourceFetcher {
 	return &imageResourceFetcher{
 		worker:                  worker,
-		resourceFactory:         f.resourceFactory,
 		resourceFetcher:         f.resourceFetcher,
 		dbResourceCacheFactory:  f.dbResourceCacheFactory,
 		dbResourceConfigFactory: f.dbResourceConfigFactory,
@@ -94,7 +90,6 @@ func (f *imageResourceFetcherFactory) NewImageResourceFetcher(
 
 type imageResourceFetcher struct {
 	worker                  worker.Worker
-	resourceFactory         resource.ResourceFactory
 	resourceFetcher         resource.Fetcher
 	dbResourceCacheFactory  db.ResourceCacheFactory
 	dbResourceConfigFactory db.ResourceConfigFactory
@@ -257,7 +252,7 @@ func (i *imageResourceFetcher) ensureVersionOfType(
 		return err
 	}
 
-	checkResourceType := i.resourceFactory.NewResourceForContainer(resourceTypeContainer)
+	checkResourceType := resource.NewResource(resourceTypeContainer)
 	versions, err := checkResourceType.Check(context.TODO(), source, nil)
 	if err != nil {
 		return err

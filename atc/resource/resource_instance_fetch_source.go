@@ -33,16 +33,13 @@ type FetchSourceFactory interface {
 
 type fetchSourceFactory struct {
 	resourceCacheFactory db.ResourceCacheFactory
-	resourceFactory      ResourceFactory
 }
 
 func NewFetchSourceFactory(
 	resourceCacheFactory db.ResourceCacheFactory,
-	resourceFactory ResourceFactory,
 ) FetchSourceFactory {
 	return &fetchSourceFactory{
 		resourceCacheFactory: resourceCacheFactory,
-		resourceFactory:      resourceFactory,
 	}
 }
 
@@ -64,7 +61,6 @@ func (r *fetchSourceFactory) NewFetchSource(
 		session:                session,
 		imageFetchingDelegate:  imageFetchingDelegate,
 		dbResourceCacheFactory: r.resourceCacheFactory,
-		resourceFactory:        r.resourceFactory,
 	}
 }
 
@@ -77,7 +73,6 @@ type resourceInstanceFetchSource struct {
 	session                Session
 	imageFetchingDelegate  worker.ImageFetchingDelegate
 	dbResourceCacheFactory db.ResourceCacheFactory
-	resourceFactory        ResourceFactory
 }
 
 func (s *resourceInstanceFetchSource) LockName() (string, error) {
@@ -157,7 +152,7 @@ func (s *resourceInstanceFetchSource) Create(ctx context.Context) (VersionedSour
 		}
 	}
 
-	resource := s.resourceFactory.NewResourceForContainer(container)
+	resource := NewResource(container)
 	versionedSource, err = resource.Get(
 		ctx,
 		volume,

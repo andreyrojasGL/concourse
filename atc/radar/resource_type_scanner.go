@@ -17,7 +17,6 @@ import (
 type resourceTypeScanner struct {
 	clock                 clock.Clock
 	pool                  worker.Pool
-	resourceFactory       resource.ResourceFactory
 	resourceConfigFactory db.ResourceConfigFactory
 	defaultInterval       time.Duration
 	dbPipeline            db.Pipeline
@@ -29,7 +28,6 @@ type resourceTypeScanner struct {
 func NewResourceTypeScanner(
 	clock clock.Clock,
 	pool worker.Pool,
-	resourceFactory resource.ResourceFactory,
 	resourceConfigFactory db.ResourceConfigFactory,
 	defaultInterval time.Duration,
 	dbPipeline db.Pipeline,
@@ -40,7 +38,6 @@ func NewResourceTypeScanner(
 	return &resourceTypeScanner{
 		clock:                 clock,
 		pool:                  pool,
-		resourceFactory:       resourceFactory,
 		resourceConfigFactory: resourceConfigFactory,
 		defaultInterval:       defaultInterval,
 		dbPipeline:            dbPipeline,
@@ -283,7 +280,7 @@ func (scanner *resourceTypeScanner) check(
 		return err
 	}
 
-	res := scanner.resourceFactory.NewResourceForContainer(container)
+	res := resource.NewResource(container)
 	newVersions, err := res.Check(context.TODO(), source, fromVersion)
 	resourceConfigScope.SetCheckError(err)
 	if err != nil {

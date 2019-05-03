@@ -22,7 +22,6 @@ var GlobalResourceCheckTimeout time.Duration
 type resourceScanner struct {
 	clock                 clock.Clock
 	pool                  worker.Pool
-	resourceFactory       resource.ResourceFactory
 	resourceConfigFactory db.ResourceConfigFactory
 	defaultInterval       time.Duration
 	dbPipeline            db.Pipeline
@@ -34,7 +33,6 @@ type resourceScanner struct {
 func NewResourceScanner(
 	clock clock.Clock,
 	pool worker.Pool,
-	resourceFactory resource.ResourceFactory,
 	resourceConfigFactory db.ResourceConfigFactory,
 	defaultInterval time.Duration,
 	dbPipeline db.Pipeline,
@@ -45,7 +43,6 @@ func NewResourceScanner(
 	return &resourceScanner{
 		clock:                 clock,
 		pool:                  pool,
-		resourceFactory:       resourceFactory,
 		resourceConfigFactory: resourceConfigFactory,
 		defaultInterval:       defaultInterval,
 		dbPipeline:            dbPipeline,
@@ -316,7 +313,11 @@ func (scanner *resourceScanner) check(
 		TeamID:        scanner.dbPipeline.TeamID(),
 	}
 
-	owner := db.NewResourceConfigCheckSessionContainerOwner(resourceConfigScope.ResourceConfig(), ContainerExpiries)
+	owner := db.NewResourceConfigCheckSessionContainerOwner(
+		resourceConfigScope.ResourceConfig(),
+		ContainerExpiries,
+	)
+
 	containerMetadata := db.ContainerMetadata{
 		Type: db.ContainerTypeCheck,
 	}
@@ -356,7 +357,7 @@ func (scanner *resourceScanner) check(
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	res := scanner.resourceFactory.NewResourceForContainer(container)
+	res := resource.NewResource(container)
 	newVersions, err := res.Check(ctx, source, fromVersion)
 	if err == context.DeadlineExceeded {
 		err = fmt.Errorf("Timed out after %v while checking for new versions - perhaps increase your resource check timeout?", timeout)
